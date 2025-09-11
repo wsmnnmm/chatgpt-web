@@ -1,5 +1,5 @@
 import axios, { type AxiosResponse } from 'axios'
-import { useAuthStore } from '@/store'
+// import { useAuthStore } from '@/store'
 
 const service = axios.create({
   baseURL: import.meta.env.VITE_GLOB_API_URL,
@@ -7,7 +7,7 @@ const service = axios.create({
 
 service.interceptors.request.use(
   (config) => {
-    const token = useAuthStore().token
+    // const token = useAuthStore().token
     config.headers['Content-Type'] = 'application/json'
     config.headers['open_id'] = '4VYg2gcHG8Z2RZKZ'
     config.headers['chat_id'] = 'default'

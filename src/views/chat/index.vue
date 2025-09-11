@@ -43,7 +43,7 @@ const inputRef = ref<Ref | null>(null)
 const promptStore = usePromptStore()
 
 // 使用storeToRefs，保证store修改后，联想部分能够重新渲染
-const { promptList: promptTemplate } = storeToRefs<any>(promptStore)
+const { promptList: promptTemplate } = storeToRefs(promptStore)
 
 // 未知原因刷新页面，loading 状态不会重置，手动重置
 dataSources.value.forEach((item, index) => {
@@ -452,7 +452,7 @@ const searchOptions = computed(() => {
 
 // value反渲染key
 const renderOption = (option: { label: string }) => {
-  for (const i of promptTemplate.value) {
+  for (const i of promptTemplate.value as any) {
     if (i.value === option.label)
       return [i.key]
   }
