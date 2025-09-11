@@ -23,13 +23,13 @@ function setupPlugins(env: ImportMetaEnv): PluginOption[] {
 
 export default defineConfig((env) => {
   const viteEnv = loadEnv(env.mode, process.cwd()) as unknown as ImportMetaEnv
-
   return {
     resolve: {
       alias: {
         '@': path.resolve(process.cwd(), 'src'),
       },
     },
+    base: '/student-chat/',
     plugins: setupPlugins(viteEnv),
     server: {
       host: '0.0.0.0',
