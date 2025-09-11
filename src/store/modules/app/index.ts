@@ -7,7 +7,7 @@ export const useAppStore = defineStore('app-store', {
   state: (): AppState => getLocalSetting(),
   actions: {
     setSiderCollapsed(collapsed: boolean) {
-      this.siderCollapsed = collapsed
+      this.siderCollapsed = true
       this.recordState()
     },
 

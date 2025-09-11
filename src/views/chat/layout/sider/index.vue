@@ -75,10 +75,10 @@ watch(
 </script>
 
 <template>
-  <NLayoutSider
-    :collapsed="collapsed"
+  <!-- <NLayoutSider
+    :collapsed="!collapsed"
     :collapsed-width="0"
-    :width="260"
+    :width="0"
     :show-trigger="isMobile ? false : 'arrow-circle'"
     collapse-mode="transform"
     position="absolute"
@@ -109,7 +109,7 @@ watch(
       </main>
       <Footer />
     </div>
-  </NLayoutSider>
+  </NLayoutSider> -->
   <template v-if="isMobile">
     <div v-show="!collapsed" class="fixed inset-0 z-40 w-full h-full bg-black/40" @click="handleUpdateCollapsed" />
   </template>
