@@ -37,16 +37,9 @@ export function fetchChatAPIProcess<T = any>(
     "messages": [
     {
       "role": "user",
-      "content": "我被同学欺负了"
+      "content": params.prompt
     }
   ],
-    // messages: [
-    //   {
-    //     "type": "text",
-    //     "text": "这是一个义务教育阶段的小孩，请对这些数据进行分析：[{\"subjectName\":\"数学\",\"score\":87},{\"subjectName\":\"语文\",\"score\":90},{\"subjectName\":\"英语\",\"score\":74.27},{\"subjectName\":\"物理\",\"score\":97},{\"subjectName\":\"生物\",\"score\":95},{\"subjectName\":\"地理\",\"score\":76},{\"subjectName\":\"体育\",\"score\":60},{\"subjectName\":\"总分\",\"score\":579.27}]"
-    //   }
-    // ],
-    // model :"doubao",
     stream: true,
   }
 

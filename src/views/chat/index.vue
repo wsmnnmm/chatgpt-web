@@ -39,7 +39,6 @@ const conversationList = computed(() => dataSources.value.filter(item => (!item.
 const prompt = ref<string>('')
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
-
 // 添加PromptStore
 const promptStore = usePromptStore()
 
@@ -113,39 +112,53 @@ async function onConversation() {
         onDownloadProgress: ({ event }) => {
           const xhr = event.target
           const { responseText } = xhr
-          // Always process the final line
-          const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
-          let chunk = responseText
-          if (lastIndex !== -1)
-            chunk = responseText.substring(lastIndex)
-          try {
-            const data = JSON.parse(chunk)
-            updateChat(
-              +uuid,
-              dataSources.value.length - 1,
-              {
-                dateTime: new Date().toLocaleString(),
-                text: lastText + (data.text ?? ''),
-                inversion: false,
-                error: false,
-                loading: true,
-                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-                requestOptions: { prompt: message, options: { ...options } },
-              },
-            )
+          if (!responseText) return // 无内容时直接返回
 
-            if (openLongReply && data.detail.choices[0].finish_reason === 'length') {
-              options.parentMessageId = data.id
-              lastText = data.text
-              message = ''
-              return fetchChatAPIOnce()
+
+          // 1. 按换行符分割成多行
+          const lines = responseText.split('\n') as string[]
+          lines.forEach(line => {
+            // 2. 筛选出以 "data:" 开头的行
+            if (line.startsWith('data:')) {
+              // 3. 提取 "data:" 后的 JSON 字符串（去掉前缀和空格）
+              const dataStr = line.slice('data:'.length).trim()
+              if (!dataStr) return // 空数据行跳过
+
+              try {
+                // 4. 解析 JSON 字符串为对象
+                const data = JSON.parse(dataStr)
+                // 处理聊天内容更新（根据 data 结构调整字段）
+                lastText += (data.content ?? '')
+
+                // 长回复续调逻辑（根据 data 结构调整 finish_reason 位置）
+                if (openLongReply && data.detail?.choices?.[0]?.finish_reason === 'length') {
+                  options.parentMessageId = data.id
+                  lastText = data.content
+                  message = ''
+                  return fetchChatAPIOnce()
+                }
+              } catch (error) {
+                console.error('JSON 解析失败:', error, '原始字符串:', dataStr)
+              }
             }
+          })
+          updateChat(
+            +uuid,
+            dataSources.value.length - 1,
+            {
+              dateTime: new Date().toLocaleString(),
+              text: lastText, // 假设 content 是消息内容字段
+              inversion: false,
+              error: false,
+              loading: true,
+              conversationOptions: {
+                conversationId: '',
+                parentMessageId: ''
+              },
+              requestOptions: { prompt: message, options: { ...options } },
+            },
+          )
 
-            scrollToBottomIfAtBottom()
-          }
-          catch (error) {
-            //
-          }
         },
       })
       updateChatSome(+uuid, dataSources.value.length - 1, { loading: false })
@@ -244,37 +257,53 @@ async function onRegenerate(index: number) {
         onDownloadProgress: ({ event }) => {
           const xhr = event.target
           const { responseText } = xhr
-          // Always process the final line
-          const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
-          let chunk = responseText
-          if (lastIndex !== -1)
-            chunk = responseText.substring(lastIndex)
-          try {
-            const data = JSON.parse(chunk)
-            updateChat(
-              +uuid,
-              index,
-              {
-                dateTime: new Date().toLocaleString(),
-                text: lastText + (data.text ?? ''),
-                inversion: false,
-                error: false,
-                loading: true,
-                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-                requestOptions: { prompt: message, options: { ...options } },
-              },
-            )
+          if (!responseText) return // 无内容时直接返回
 
-            if (openLongReply && data.detail.choices[0].finish_reason === 'length') {
-              options.parentMessageId = data.id
-              lastText = data.text
-              message = ''
-              return fetchChatAPIOnce()
+
+          // 1. 按换行符分割成多行
+          const lines = responseText.split('\n') as string[]
+          lines.forEach(line => {
+            // 2. 筛选出以 "data:" 开头的行
+            if (line.startsWith('data:')) {
+              // 3. 提取 "data:" 后的 JSON 字符串（去掉前缀和空格）
+              const dataStr = line.slice('data:'.length).trim()
+              if (!dataStr) return // 空数据行跳过
+
+              try {
+                // 4. 解析 JSON 字符串为对象
+                const data = JSON.parse(dataStr)
+                // 处理聊天内容更新（根据 data 结构调整字段）
+                lastText += (data.content ?? '')
+
+                // 长回复续调逻辑（根据 data 结构调整 finish_reason 位置）
+                if (openLongReply && data.detail?.choices?.[0]?.finish_reason === 'length') {
+                  options.parentMessageId = data.id
+                  lastText = data.content
+                  message = ''
+                  return fetchChatAPIOnce()
+                }
+              } catch (error) {
+                console.error('JSON 解析失败:', error, '原始字符串:', dataStr)
+              }
             }
-          }
-          catch (error) {
-            //
-          }
+          })
+          updateChat(
+            +uuid,
+            index,
+            {
+              dateTime: new Date().toLocaleString(),
+              text: lastText, // 假设 content 是消息内容字段
+              inversion: false,
+              error: false,
+              loading: true,
+              conversationOptions: {
+                conversationId: '',
+                parentMessageId: ''
+              },
+              requestOptions: { prompt: message, options: { ...options } },
+            },
+          )
+
         },
       })
       updateChatSome(+uuid, index, { loading: false })
@@ -461,18 +490,10 @@ onUnmounted(() => {
 
 <template>
   <div class="flex flex-col w-full h-full">
-    <HeaderComponent
-      v-if="isMobile"
-      :using-context="usingContext"
-      @export="handleExport"
-      @handle-clear="handleClear"
-    />
+    <HeaderComponent v-if="isMobile" :using-context="usingContext" @export="handleExport" @handle-clear="handleClear" />
     <main class="flex-1 overflow-hidden">
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
-        <div
-          class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
-          :class="[isMobile ? 'p-2' : 'p-4']"
-        >
+        <div class="w-full max-w-screen-xl m-auto dark:bg-[#101014]" :class="[isMobile ? 'p-2' : 'p-4']">
           <div id="image-wrapper" class="relative">
             <template v-if="!dataSources.length">
               <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
@@ -482,17 +503,9 @@ onUnmounted(() => {
             </template>
             <template v-else>
               <div>
-                <Message
-                  v-for="(item, index) of dataSources"
-                  :key="index"
-                  :date-time="item.dateTime"
-                  :text="item.text"
-                  :inversion="item.inversion"
-                  :error="item.error"
-                  :loading="item.loading"
-                  @regenerate="onRegenerate(index)"
-                  @delete="handleDelete(index)"
-                />
+                <Message v-for="(item, index) of dataSources" :key="index" :date-time="item.dateTime" :text="item.text"
+                  :inversion="item.inversion" :error="item.error" :loading="item.loading"
+                  @regenerate="onRegenerate(index)" @delete="handleDelete(index)" />
                 <div class="sticky bottom-0 left-0 flex justify-center">
                   <NButton v-if="loading" type="warning" @click="handleStop">
                     <template #icon>
@@ -527,17 +540,9 @@ onUnmounted(() => {
           </HoverButton>
           <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
             <template #default="{ handleInput, handleBlur, handleFocus }">
-              <NInput
-                ref="inputRef"
-                v-model:value="prompt"
-                type="textarea"
-                :placeholder="placeholder"
-                :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
-                @input="handleInput"
-                @focus="handleFocus"
-                @blur="handleBlur"
-                @keypress="handleEnter"
-              />
+              <NInput ref="inputRef" v-model:value="prompt" type="textarea" :placeholder="placeholder"
+                :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }" @input="handleInput" @focus="handleFocus"
+                @blur="handleBlur" @keypress="handleEnter" />
             </template>
           </NAutoComplete>
           <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
