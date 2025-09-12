@@ -37,7 +37,6 @@ const { uuid } = route.params as { uuid: string }
 
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !!item.conversationOptions)))
-
 const prompt = ref<string>('')
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
@@ -116,14 +115,13 @@ async function onConversation() {
           const { responseText } = xhr
           if (!responseText) return // 无内容时直接返回
 
-
           // 1. 按换行符分割成多行
-          const lines = responseText.split('\n') as string[]
+          const lines = responseText.trim().split('\n') as string[]
           lines.forEach(line => {
             // 2. 筛选出以 "data:" 开头的行
-            if (line.startsWith('data:')) {
+            if (line.startsWith('data:') || line.startsWith("{")) {
               // 3. 提取 "data:" 后的 JSON 字符串（去掉前缀和空格）
-              const dataStr = line.slice('data:'.length).trim()
+              const dataStr =line.startsWith('data:') ? line.slice('data:'.length).trim(): line.trim()
               if (!dataStr) return // 空数据行跳过
 
               try {
@@ -266,11 +264,10 @@ async function onRegenerate(index: number) {
           const lines = responseText.split('\n') as string[]
           lines.forEach(line => {
             // 2. 筛选出以 "data:" 开头的行
-            if (line.startsWith('data:')) {
+            if (line.startsWith('data:') || line.startsWith("{")) {
               // 3. 提取 "data:" 后的 JSON 字符串（去掉前缀和空格）
-              const dataStr = line.slice('data:'.length).trim()
+              const dataStr =line.startsWith('data:') ? line.slice('data:'.length).trim(): line.trim()
               if (!dataStr) return // 空数据行跳过
-
               try {
                 // 4. 解析 JSON 字符串为对象
                 const data = JSON.parse(dataStr)

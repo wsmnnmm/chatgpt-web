@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { defaultState, getLocalState, setLocalState } from './helper'
+import { defaultState, defaultText, getLocalState, setLocalState } from './helper'
 import { router } from '@/router'
 import { t } from '@/locales'
 
@@ -170,17 +170,34 @@ export const useChatStore = defineStore('chat-store', {
     clearChatByUuid(uuid: number) {
       if (!uuid || uuid === 0) {
         if (this.chat.length) {
-          this.chat[0].data = []
+          this.chat[0].data = [{
+            conversationOptions: { conversationId: '', parentMessageId: '' },
+            dateTime: "",
+            error: false,
+            inversion: false,
+            loading: false,
+            requestOptions: { prompt: '我是学生，请你作为心理疗愈师，写一段欢迎语，为我解答困惑', options: {} },
+            text: defaultText,
+          }]
           this.recordState()
         }
         return
       }
-
-      const index = this.chat.findIndex(item => item.uuid === uuid)
-      if (index !== -1) {
-        this.chat[index].data = []
-        this.recordState()
-      }
+      this.chat[0].data = [{
+        conversationOptions: { conversationId: '', parentMessageId: '' },
+        dateTime: "",
+        error: false,
+        inversion: false,
+        loading: false,
+        requestOptions: { prompt: '我是学生，请你作为心理疗愈师，写一段欢迎语，为我解答困惑', options: {} },
+        text: defaultText,
+      }]
+      this.recordState()
+      // const index = this.chat.findIndex(item => item.uuid === uuid)
+      // if (index !== -1) {
+      //   this.chat[index].data = []
+      //   this.recordState()
+      // }
     },
 
     clearHistory() {
