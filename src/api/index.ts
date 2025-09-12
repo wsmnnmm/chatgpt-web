@@ -1,6 +1,7 @@
 import type { AxiosProgressEvent, GenericAbortSignal } from 'axios'
 import { post } from '@/utils/request'
 import { useAuthStore, useSettingStore } from '@/store'
+import { parseQueryString } from '@/utils/functions';
 
 export function fetchChatAPI<T = any>(
   prompt: string,
@@ -59,9 +60,10 @@ export function fetchChatAPIProcess<T = any>(
   const urlParams = new URLSearchParams(search);
 
   // 获取具体参数值
-  const chatId = urlParams.get('chat_id'); // "default"
-  const openId = urlParams.get('open_id'); // "4VYg2gcHG8Z2RZKZ"
-
+  const chatId = urlParams.get('chat_id') || parseQueryString(search)?.chat_id || 'default'; // "default"
+  const openId = urlParams.get('open_id') || parseQueryString(search)?.open_id || '4VYg2gcHG8Z2RZKZ'; // "4VYg2gcHG8Z2RZKZ"
+  
+  console.log(window.location, Location, 'chatId', chatId, 'openId', openId, parseQueryString(search))
 
   return post<T>({
     url: '/api/v1/chat/completions',

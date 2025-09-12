@@ -1,4 +1,5 @@
 import axios, { type AxiosResponse } from 'axios'
+import { parseQueryString } from '../functions';
 // import { useAuthStore } from '@/store'
 
 const service = axios.create({
@@ -12,8 +13,8 @@ const search = window.location.search; // "?chat_id=default&open_id=4VYg2gcHG8Z2
 const urlParams = new URLSearchParams(search);
 
 // 获取具体参数值
-const chatId = urlParams.get('chat_id'); // "default"
-const openId = urlParams.get('open_id'); // "4VYg2gcHG8Z2RZKZ"
+const chatId = urlParams.get('chat_id') || parseQueryString(search)?.chat_id || 'default'; // "default"
+const openId = urlParams.get('open_id') || parseQueryString(search)?.open_id || '4VYg2gcHG8Z2RZKZ'; // "4VYg2gcHG8Z2RZKZ"
 
 console.log('chat_id:', chatId);
 console.log('open_id:', openId);
