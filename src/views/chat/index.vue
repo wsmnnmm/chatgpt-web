@@ -528,11 +528,11 @@ onUnmounted(() => {
               <SvgIcon icon="ri:delete-bin-line" />
             </span>
           </HoverButton>
-          <HoverButton v-if="!isMobile" @click="handleExport">
+          <!-- <HoverButton v-if="!isMobile" @click="handleExport">
             <span class="text-xl text-[#4f555e] dark:text-white">
               <SvgIcon icon="ri:download-2-line" />
             </span>
-          </HoverButton>
+          </HoverButton> -->
           <HoverButton @click="toggleUsingContext">
             <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
               <SvgIcon icon="ri:chat-history-line" />

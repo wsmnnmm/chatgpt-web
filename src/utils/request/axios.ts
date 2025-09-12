@@ -5,12 +5,25 @@ const service = axios.create({
   baseURL: import.meta.env.VITE_GLOB_API_URL,
 })
 
+// 获取完整的查询字符串（包含开头的 "?"）
+const search = window.location.search; // "?chat_id=default&open_id=4VYg2gcHG8Z2RZKZ"
+
+// 创建 URLSearchParams 实例（自动忽略开头的 "?"）
+const urlParams = new URLSearchParams(search);
+
+// 获取具体参数值
+const chatId = urlParams.get('chat_id'); // "default"
+const openId = urlParams.get('open_id'); // "4VYg2gcHG8Z2RZKZ"
+
+console.log('chat_id:', chatId);
+console.log('open_id:', openId);
+
 service.interceptors.request.use(
   (config) => {
     // const token = useAuthStore().token
     config.headers['Content-Type'] = 'application/json'
-    config.headers['open_id'] = '4VYg2gcHG8Z2RZKZ'
-    config.headers['chat_id'] = 'default'
+    config.headers['open_id'] = openId || '4VYg2gcHG8Z2RZKZ'
+    config.headers['chat_id'] = chatId || 'default'
     config.headers['org_id'] = 'sslns'
     // if (token)
     // config.headers.Authorization = `Bearer ${token}`
@@ -18,7 +31,7 @@ service.interceptors.request.use(
     return config
   },
   (error) => {
-    return Promise.reject(error.response) 
+    return Promise.reject(error.response)
   },
 )
 

@@ -35,11 +35,11 @@ export function fetchChatAPIProcess<T = any>(
     // prompt: params.prompt,
     // options: params.options,
     "messages": [
-    {
-      "role": "user",
-      "content": params.prompt
-    }
-  ],
+      {
+        "role": "user",
+        "content": params.prompt
+      }
+    ],
     stream: true,
   }
 
@@ -52,11 +52,25 @@ export function fetchChatAPIProcess<T = any>(
       withCredentials: true
     }
   }
+  // 获取完整的查询字符串（包含开头的 "?"）
+  const search = window.location.search; // "?chat_id=default&open_id=4VYg2gcHG8Z2RZKZ"
+
+  // 创建 URLSearchParams 实例（自动忽略开头的 "?"）
+  const urlParams = new URLSearchParams(search);
+
+  // 获取具体参数值
+  const chatId = urlParams.get('chat_id'); // "default"
+  const openId = urlParams.get('open_id'); // "4VYg2gcHG8Z2RZKZ"
+
 
   return post<T>({
     url: '/api/v1/chat/completions',
     data,
     signal: params.signal,
+    headers: {
+      'chat_id': chatId || 'default',
+      'open_id': openId || '4VYg2gcHG8Z2RZKZ',
+    },
     onDownloadProgress: params.onDownloadProgress,
   })
 }
