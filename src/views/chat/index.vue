@@ -104,13 +104,13 @@ async function onConversation() {
   scrollToBottom()
 
   try {
-    let lastText = ''
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
         prompt: message,
         options,
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
+          let lastText = ''
           const xhr = event.target
           const { responseText } = xhr
           if (!responseText) return // 无内容时直接返回
@@ -248,13 +248,13 @@ async function onRegenerate(index: number) {
   )
 
   try {
-    let lastText = ''
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
         prompt: message,
         options,
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
+          let lastText = ''
           const xhr = event.target
           const { responseText } = xhr
           if (!responseText) return // 无内容时直接返回
@@ -262,6 +262,7 @@ async function onRegenerate(index: number) {
 
           // 1. 按换行符分割成多行
           const lines = responseText.split('\n') as string[]
+          console.log(lines,'lines',lastText)
           lines.forEach(line => {
             // 2. 筛选出以 "data:" 开头的行
             if (line.startsWith('data:') || line.startsWith("{")) {
@@ -271,6 +272,7 @@ async function onRegenerate(index: number) {
               try {
                 // 4. 解析 JSON 字符串为对象
                 const data = JSON.parse(dataStr)
+                // console.log(data.content,'data',lastText)
                 // 处理聊天内容更新（根据 data 结构调整字段）
                 lastText += (data.content ?? '')
 
