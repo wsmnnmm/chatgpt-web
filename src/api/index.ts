@@ -1,5 +1,5 @@
 import type { AxiosProgressEvent, GenericAbortSignal } from 'axios'
-import { post } from '@/utils/request'
+import { post, post2 } from '@/utils/request'
 import { useAuthStore, useSettingStore } from '@/store'
 import { parseQueryString } from '@/utils/functions';
 
@@ -62,7 +62,7 @@ export function fetchChatAPIProcess<T = any>(
   // 获取具体参数值
   const chatId = urlParams.get('chat_id') || parseQueryString(search)?.chat_id || 'default'; // "default"
   const openId = urlParams.get('open_id') || parseQueryString(search)?.open_id || '4VYg2gcHG8Z2RZKZ'; // "4VYg2gcHG8Z2RZKZ"
-  
+
   console.log(window.location, Location, 'chatId', chatId, 'openId', openId, parseQueryString(search))
 
   return post<T>({
@@ -87,5 +87,12 @@ export function fetchVerify<T>(token: string) {
   return post<T>({
     url: '/verify',
     data: { token },
+  })
+}
+
+export function chatLimit<T>(params: { userId: string }) {
+  return post2<T>({
+    url: '/smart-user-api/bs-ai-chat-limit/setLimit',
+    data: params,
   })
 }

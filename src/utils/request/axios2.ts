@@ -3,7 +3,7 @@ import { parseQueryString } from '../functions';
 // import { useAuthStore } from '@/store'
 
 const service = axios.create({
-  baseURL: import.meta.env.VITE_GLOB_API_URL,
+  baseURL: import.meta.env.VITE_GLOB_API_URL_2,
 })
 
 // 获取完整的查询字符串（包含开头的 "?"）
@@ -15,6 +15,7 @@ const urlParams = new URLSearchParams(search);
 // 获取具体参数值
 var chatId = (urlParams && urlParams.get('chat_id')) || (parseQueryString(search) && parseQueryString(search).chat_id) || 'default';
 var openId = (urlParams && urlParams.get('open_id')) || (parseQueryString(search) && parseQueryString(search).open_id) || '4VYg2gcHG8Z2RZKZ'; 
+
 
 console.log('chat_id:', chatId);
 console.log('open_id:', openId);

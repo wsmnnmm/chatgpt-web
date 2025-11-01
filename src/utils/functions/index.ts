@@ -6,25 +6,22 @@ export function getCurrentDate() {
   return `${year}-${month}-${day}`
 }
 
-export function parseQueryString(search:any) {
-  const params = {} as any;
-  if (!search || search === '?') return params;
+export function parseQueryString(url: string): Record<string, string> {
+  const params: Record<string, string> = {};
+  const queryStart = url.indexOf('?');
+  if (queryStart === -1) return params;
 
-  // 移除开头的 "?"
-  const queryStr = search.substring(1);
-  // 分割参数对（如 "a=1&b=2" → ["a=1", "b=2"]）
-  const pairs = queryStr.split('&');
+  const hashStart = url.indexOf('#', queryStart);
+  const queryString = hashStart === -1 ? url.slice(queryStart + 1) : url.slice(queryStart + 1, hashStart);
 
-  for (const pair of pairs) {
-    // 分割键和值（如 "a=1" → ["a", "1"]）
-    const [key, value] = pair.split('=');
+  queryString.split('&').filter(Boolean).forEach(pair => {
+    const [key, ...values] = pair.split('=');
     if (key) {
-      // 解码 URL 编码的字符（如 %20 → 空格）
-      const decodeKey = decodeURIComponent(key);
-      const decodeValue = value ? decodeURIComponent(value) : '';
+      const decodeKey = decodeURIComponent(key.trim());
+      const decodeValue = values.length ? decodeURIComponent(values.join('=').trim()) : '';
       params[decodeKey] = decodeValue;
     }
-  }
+  });
 
   return params;
 }

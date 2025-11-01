@@ -13,8 +13,9 @@ import HeaderComponent from './components/Header/index.vue'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useChatStore, usePromptStore } from '@/store'
-import { fetchChatAPIProcess } from '@/api'
+import { chatLimit, fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
+import { parseQueryString } from '@/utils/functions'
 
 let controller = new AbortController()
 
@@ -29,7 +30,7 @@ const chatStore = useChatStore()
 const { isMobile } = useBasicLayout()
 const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
-const { usingContext, 
+const { usingContext,
   // toggleUsingContext 
 } = useUsingContext()
 
@@ -52,8 +53,24 @@ dataSources.value.forEach((item, index) => {
     updateChatSome(+uuid, index, { loading: false })
 })
 
-function handleSubmit() {
-  onConversation()
+async function handleSubmit() {
+  const userId = localStorage.getItem('userId') || 'default'
+  if (userId !=='default') {
+    try {
+      await chatLimit({ userId }).then((res: any) => {
+        console.log(res, 'res')
+        if (res.code === 200) {
+          onConversation()
+        } else {
+            ms.warning(res.message)
+        }
+      })
+    } catch (error:any) {
+      ms.warning(error.message)
+    }
+  }else{
+    onConversation()
+  }
 }
 
 async function onConversation() {
@@ -121,7 +138,7 @@ async function onConversation() {
             // 2. 筛选出以 "data:" 开头的行
             if (line.startsWith('data:') || line.startsWith("{")) {
               // 3. 提取 "data:" 后的 JSON 字符串（去掉前缀和空格）
-              const dataStr =line.startsWith('data:') ? line.slice('data:'.length).trim(): line.trim()
+              const dataStr = line.startsWith('data:') ? line.slice('data:'.length).trim() : line.trim()
               if (!dataStr) return // 空数据行跳过
 
               try {
@@ -262,12 +279,12 @@ async function onRegenerate(index: number) {
 
           // 1. 按换行符分割成多行
           const lines = responseText.split('\n') as string[]
-          console.log(lines,'lines',lastText)
+          console.log(lines, 'lines', lastText)
           lines.forEach(line => {
             // 2. 筛选出以 "data:" 开头的行
             if (line.startsWith('data:') || line.startsWith("{")) {
               // 3. 提取 "data:" 后的 JSON 字符串（去掉前缀和空格）
-              const dataStr =line.startsWith('data:') ? line.slice('data:'.length).trim(): line.trim()
+              const dataStr = line.startsWith('data:') ? line.slice('data:'.length).trim() : line.trim()
               if (!dataStr) return // 空数据行跳过
               try {
                 // 4. 解析 JSON 字符串为对象
@@ -481,6 +498,16 @@ onMounted(() => {
   scrollToBottom()
   if (inputRef.value && !isMobile.value)
     inputRef.value?.focus()
+  
+  const search = window.location.search; 
+  const urlParams = new URLSearchParams(search);
+  var chatId = (urlParams && urlParams.get('chat_id')) || (parseQueryString(search) && parseQueryString(search).chat_id);
+  const userId = localStorage.getItem('userId')
+  console.log('chatId', chatId, userId,urlParams,search,window.location)
+  if (chatId !== userId) {
+    localStorage.setItem('userId', chatId);
+    chatStore.clearChatByUuid(+uuid)
+  }
 })
 
 onUnmounted(() => {
