@@ -53,7 +53,20 @@ dataSources.value.forEach((item, index) => {
     updateChatSome(+uuid, index, { loading: false })
 })
 
+const isInDevTime = () =>{
+      const utcHour = new Date().getUTCHours();
+      const beijingHour = utcHour + 8; // 北京时间 = UTC时间 + 8小时
+      // 校验是否在 12:00-14:00 或 17:00-19:00 范围内
+      const isMorning = beijingHour >= 12 && beijingHour < 14; // 12点整开始，14点整截止（不含14点）
+      const isEvening = beijingHour >= 17 && beijingHour < 19; // 17点整开始，19点整截止（不含22点）
+      return isMorning || isEvening;
+    }
+
 async function handleSubmit() {
+  if(!isInDevTime()){
+    ms.warning('当前不在开放时间，开放时间为每天12:00-14:00 和 17:00-19:00')
+    return
+  }
   const userId = localStorage.getItem('userId') || 'default'
   if (userId !=='default') {
     try {
